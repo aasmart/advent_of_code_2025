@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
 func maxJoltage(bank string) int {
@@ -21,8 +22,25 @@ func maxJoltage(bank string) int {
 		}
 	}
 
-	fmt.Println(maxSoFar)
 	return maxSoFar
+}
+
+func maxOverloadJoltage(bank string) int {
+	joltage := ""
+
+	for i, charge := range bank {
+		chargeNum := int(charge - '0')
+		// the second check just ensures that we cna remove this number and have enough left to make 12 digits
+		for len(joltage) > 0 && len(joltage)+len(bank)-i-1 >= 12 && chargeNum > int(joltage[len(joltage)-1]-'0') {
+			joltage = joltage[:len(joltage)-1]
+		}
+		if len(joltage) < 12 {
+			joltage += string(charge)
+		}
+	}
+
+	val, _ := strconv.Atoi(joltage)
+	return val
 }
 
 func parseInput(filename string, process func(string) int) {
@@ -31,18 +49,18 @@ func parseInput(filename string, process func(string) int) {
 		log.Fatal(err)
 	}
 
-	total_joltage := 0
+	totalJoltage := 0
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		bank := scanner.Text()
-		fmt.Println(bank)
-		total_joltage += process(bank)
+		totalJoltage += process(bank)
 	}
 
-	fmt.Println(total_joltage)
+	fmt.Println(totalJoltage)
 }
 
 func main() {
 	parseInput(os.Args[1], maxJoltage)
+	parseInput(os.Args[1], maxOverloadJoltage)
 }
