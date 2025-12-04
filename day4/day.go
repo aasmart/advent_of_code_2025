@@ -45,15 +45,17 @@ type pos struct {
 func part2(grid []string) int {
 	totalAccessible := 0
 
-	// TODO: how to dynamically allocate this?
-	posNumAdjacentRolls := [][]int{}
+	posNumAdjacentRolls := make([][]int, len(grid))
+	for i := range posNumAdjacentRolls {
+		posNumAdjacentRolls[i] = make([]int, len(grid[i]))
+	}
+
 	currentAccessibleRolls := []pos{}
 
 	for row, str := range grid {
 		posNumAdjacentRolls = append(posNumAdjacentRolls, []int{})
 		for col, currTile := range str {
 			if currTile != '@' {
-				posNumAdjacentRolls[row] = append(posNumAdjacentRolls[row], 0)
 				continue
 			}
 
@@ -69,7 +71,7 @@ func part2(grid []string) int {
 				}
 			}
 
-			posNumAdjacentRolls[row] = append(posNumAdjacentRolls[row], numAdjacent)
+			posNumAdjacentRolls[row][col] = numAdjacent
 
 			if numAdjacent < 4 {
 				currentAccessibleRolls = append(currentAccessibleRolls, pos{row, col})
