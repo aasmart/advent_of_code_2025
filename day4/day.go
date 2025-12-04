@@ -117,6 +117,8 @@ func parseInput(filename string) []string {
 		log.Fatal(err)
 	}
 
+	defer file.Close()
+
 	grid := []string{}
 
 	scanner := bufio.NewScanner(file)
