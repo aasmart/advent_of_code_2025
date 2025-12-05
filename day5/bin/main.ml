@@ -39,18 +39,13 @@ let rec make_interval_list (lines : String.t list) (interval_ls : interval_list)
       | None -> raise (Failure ""))
 ;;
 
-let count_valid_ids ((lines, interval_map) : String.t list * interval_list)
-  : int
+let count_valid_ids ((lines, interval_ls) : String.t list * interval_list) : int
   =
   let res =
-    List.fold lines ~init:0 ~f:(fun (count : int) (line : String.t) ->
+    List.count lines ~f:(fun (line : String.t) ->
       let id = line |> int_of_string in
-      (match
-         List.find interval_map ~f:(fun (start, nd) -> id >= start && id <= nd)
-       with
-       | Some _ -> 1
-       | None -> 0)
-      + count)
+      Option.is_some
+        (List.find interval_ls ~f:(fun (start, nd) -> id >= start && id <= nd)))
   in
   res
 ;;
