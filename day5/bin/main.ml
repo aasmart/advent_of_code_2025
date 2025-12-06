@@ -19,7 +19,7 @@ let rec make_interval_list (lines : String.t list) (interval_ls : interval_list)
   : String.t list * interval_list
   =
   match lines with
-  | [] -> raise (Failure "")
+  | [] -> failwith "bad"
   | line :: tl ->
     if String.is_empty line
     then tl, interval_ls
@@ -36,7 +36,7 @@ let rec make_interval_list (lines : String.t list) (interval_ls : interval_list)
         in
         let interval : Interval.t = interval_start, interval_end in
         interval :: interval_ls |> make_interval_list tl
-      | None -> raise (Failure ""))
+      | None -> failwith "bad")
 ;;
 
 let count_valid_ids ((lines, interval_ls) : String.t list * interval_list) : int
@@ -70,7 +70,7 @@ let rec make_merge_interval_list
   : interval_list
   =
   match lines with
-  | [] -> raise (Failure "")
+  | [] -> failwith "bad"
   | line :: tl ->
     if String.is_empty line
     then interval_ls
@@ -87,7 +87,7 @@ let rec make_merge_interval_list
         in
         let interval : Interval.t = interval_start, interval_end in
         merge_intervals interval interval_ls |> make_merge_interval_list tl
-      | None -> raise (Failure ""))
+      | None -> failwith "bad")
 ;;
 
 let read_input filename =
