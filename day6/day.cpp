@@ -10,6 +10,9 @@
 #include <vector>
 
 namespace {
+// NOTE: to self; spent way to long on trying to overcomplicate this with ranges
+// and regex; should have done simpler solution
+
 auto part1(std::vector<std::string> const& lines) -> uint64_t {
     std::vector<std::vector<uint64_t>> numbers;
     std::vector<char> operators;
@@ -50,6 +53,15 @@ auto part1(std::vector<std::string> const& lines) -> uint64_t {
     return total;
 }
 
+// NOTE: to self; got tunnel visioned on a false idea that numbers were "atomic units",
+// and that I didn't want to break them up. This caused me not to consider literally
+// just reading column-by-column and handling that from there.
+//
+// Although, this approach is pretty fast
+//
+// When I came up with the offset solution, I didn't pause to question if there could be
+// a better way. Basically I didn't spend enough time with the actual problem, and instead
+// spent more time trying to find the solution
 auto part2(std::vector<std::string> const& lines) -> uint64_t {
     std::vector<std::vector<std::pair<size_t, std::string>>> numbers(lines.size() - 1);
     std::vector<char> operators;
