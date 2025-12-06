@@ -50,6 +50,77 @@ auto part1(std::vector<std::string> const& lines) -> uint64_t {
     return total;
 }
 
+auto part2(std::vector<std::string> const& lines) -> uint64_t {
+    std::vector<std::vector<std::pair<size_t, std::string>>> numbers(lines.size() - 1);
+    std::vector<char> operators;
+    for (auto [i, line] :
+         std::views::enumerate(std::ranges::subrange(lines.begin(), lines.begin() + lines.size() - 1))) {
+        std::string number;
+        std::optional<size_t> first_digit_pos;
+        for (size_t j = 0; j <= line.size(); ++j) {
+            if (j < line.size() && line[j] != ' ') {
+                if (!first_digit_pos) {
+                    first_digit_pos = j;
+                }
+                number.push_back(line[j]);
+            } else if (first_digit_pos) {
+                numbers[i].emplace_back(first_digit_pos.value(), number);
+                number.clear();
+                first_digit_pos.reset();
+            }
+        }
+    }
+
+    for (size_t i = 0; i < numbers[0].size(); ++i) {
+        size_t min_start_pos = std::numeric_limits<size_t>::max();
+        for (auto& row : numbers) {
+            min_start_pos = std::min(row[i].first, min_start_pos);
+        }
+
+        for (auto& row : numbers) {
+            row[i].first -= min_start_pos;
+        }
+    }
+
+    std::istringstream iss { lines.back() };
+    char op {};
+    while (iss >> op) {
+        operators.push_back(op);
+    }
+
+    uint64_t total { 0 };
+    for (auto [column, op] : std::views::enumerate(operators)) {
+        bool const is_multiply = op == '*';
+
+        std::vector<uint64_t> args;
+        uint32_t num_pos { 0 };
+        while (true) {
+            std::optional<uint64_t> num;
+            for (auto& op_numbers : numbers) {
+                auto const [col_start_pos, col_number_str] = op_numbers[column];
+                auto const col_number_str_index = num_pos - col_start_pos;
+                num = col_start_pos <= num_pos && col_number_str_index < col_number_str.size()
+                      ? ((num.value_or(0) * 10) + col_number_str[col_number_str_index] - '0')
+                      : num;
+            }
+
+            if (!num) {
+                break;
+            }
+
+            args.push_back(num.value());
+            num_pos += 1;
+        }
+
+        total += std::ranges::fold_left(args, is_multiply ? 1 : 0, [is_multiply](uint64_t acc, uint64_t value) {
+            return is_multiply ? acc * value : acc + value;
+        });
+    }
+
+    return total;
+}
+
+
 [[nodiscard]] auto read_lines(std::string filename) -> std::vector<std::string> {
     std::ifstream ifs { filename };
 
@@ -66,5 +137,6 @@ auto part1(std::vector<std::string> const& lines) -> uint64_t {
 
 auto main(int argc, char* argv[]) -> int {
     std::println("{}", part1(read_lines(argv[1])));
+    std::println("{}", part2(read_lines(argv[1])));
     return 0;
 }
