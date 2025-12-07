@@ -36,4 +36,27 @@ def part1(lines)
   total_split
 end
 
+def part2(lines)
+  beams_in_cols = Hash.new(0)
+
+  beams_in_cols[lines[0].index('S')] = 1
+
+  for beam_row in 1..(lines.length - 1) do
+    next_beams_in_cols = Hash.new(0)
+    beams_in_cols.each do |beam_col, num_beams|
+      if lines[beam_row][beam_col] != '^'
+        next_beams_in_cols[beam_col] += num_beams
+        next
+      end
+
+      next_beams_in_cols[beam_col - 1] += num_beams if beam_col - 1 >= 0
+      next_beams_in_cols[beam_col + 1] += num_beams if beam_col + 1 < lines[0].length
+    end
+
+    beams_in_cols = next_beams_in_cols
+  end
+  beams_in_cols.values.reduce(0) { |sum, hash| sum + hash }
+end
+
 puts part1(lines)
+puts part2(lines)
