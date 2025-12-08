@@ -103,7 +103,7 @@ module UnionFind = struct
   ;;
 end
 
-let connect_boxes boxes =
+let connect_boxes_pt1 boxes =
   let points =
     List.map boxes ~f:(fun line ->
       let split_str = String.split line ~on:',' in
@@ -129,10 +129,43 @@ let connect_boxes boxes =
   |> print_endline
 ;;
 
+let connect_boxes_pt2 boxes =
+  let points =
+    List.map boxes ~f:(fun line ->
+      let split_str = String.split line ~on:',' in
+      match split_str with
+      | [ x; y; z ] ->
+        x |> int_of_string, y |> int_of_string, z |> int_of_string
+      | _ -> failwith "invalid coordinate format")
+  in
+  let edges = all_point_pairs points in
+  let sorted_edges =
+    List.sort edges ~compare:(fun (_, _, lhs_d) (_, _, rhs_d) ->
+      Float.compare lhs_d rhs_d)
+  in
+  let num_points = List.length points in
+  let uf = UnionFind.create (List.length points) in
+  let rec connect_all edges =
+    match edges with
+    | [] -> failwith "what even happened"
+    | (x, y, _) :: tl ->
+      UnionFind.union uf x y;
+      let len, _ = UnionFind.find uf x in
+      if len = num_points
+      then (
+        match List.nth points x, List.nth points y with
+        | Some (lhs_x, _, _), Some (rhs_x, _, _) -> lhs_x * rhs_x
+        | _ -> failwith "invalid connection")
+      else connect_all tl
+  in
+  connect_all sorted_edges |> string_of_int |> print_endline
+;;
+
 let read_input filename =
   let lines = In_channel.read_lines filename in
   lines
 ;;
 
 let filename = "input.txt" in
-read_input filename |> connect_boxes
+connect_boxes_pt1 (read_input filename);
+connect_boxes_pt2 (read_input filename)
