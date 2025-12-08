@@ -58,9 +58,7 @@ let distance (pos_a_x, pos_a_y, pos_a_z) (pos_b_x, pos_b_y, pos_b_z) =
   let delta_x = pos_a_x - pos_b_x in
   let delta_y = pos_a_y - pos_b_y in
   let delta_z = pos_a_z - pos_b_z in
-  sqrt
-    ((delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z)
-     |> float_of_int)
+  (delta_x * delta_x) + (delta_y * delta_y) + (delta_z * delta_z)
 ;;
 
 let all_point_pairs points =
@@ -115,7 +113,7 @@ let connect_boxes_pt1 boxes =
   let edges = all_point_pairs points in
   let sorted_edges =
     List.sort edges ~compare:(fun (_, _, lhs_d) (_, _, rhs_d) ->
-      Float.compare lhs_d rhs_d)
+      Int.compare lhs_d rhs_d)
   in
   let uf = UnionFind.create (List.length points) in
   List.iter (List.take sorted_edges 1000) ~f:(fun (x, y, _) ->
@@ -141,7 +139,7 @@ let connect_boxes_pt2 boxes =
   let edges = all_point_pairs points in
   let sorted_edges =
     List.sort edges ~compare:(fun (_, _, lhs_d) (_, _, rhs_d) ->
-      Float.compare lhs_d rhs_d)
+      Int.compare lhs_d rhs_d)
   in
   let num_points = List.length points in
   let uf = UnionFind.create (List.length points) in
