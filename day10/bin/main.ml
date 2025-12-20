@@ -83,7 +83,7 @@ let part_2 filename =
       |> List.filter ~f:(fun s -> String.is_empty s |> not)
       |> List.map ~f:int_of_string
     in
-    let toggle_sets =
+    let buttons =
       match Re2.find_all toggle_regex line with
       | Ok toggles -> List.map toggles ~f:extract_digit_list
       | Error _ -> failwith "no toggles"
@@ -94,8 +94,8 @@ let part_2 filename =
     in
     (* create the problem we want to optimize *)
     let problem =
-      let lp_vars =
-        List.init (List.length toggle_sets) ~f:(fun i ->
+      let button_var =
+        List.init (List.length buttons) ~f:(fun i ->
           Lp.var
             ~integer:true
             ~lb:0.
@@ -104,14 +104,14 @@ let part_2 filename =
       (* we want to minimize the sum of the number of times we press each button*)
       let objective =
         Lp.minimize
-          (List.reduce_exn lp_vars ~f:(fun curr_poly next ->
+          (List.reduce_exn button_var ~f:(fun curr_poly next ->
              Lp.( ++ ) curr_poly next))
       in
       (* build the polynomial portion of the constraints *)
       let constraint_polys =
         Array.create ~len:(List.length joltage_requirements) (Lp.c 0.)
       in
-      List.iter2_exn toggle_sets lp_vars ~f:(fun set var ->
+      List.iter2_exn buttons button_var ~f:(fun set var ->
         List.iter set ~f:(fun counter ->
           constraint_polys.(counter) <- Lp.( ++ ) constraint_polys.(counter) var));
       (* add the joltage equivalence to each constraint *)
