@@ -47,6 +47,8 @@ let all_rectangle_bounds points =
 ;;
 
 (* this doesn't work for the general case, but certainly works for the shape of the given input*)
+(* basically what this does is take the bounds of rectangles, and then check to see if the
+   edge crosses through that rectangle*)
 let filter_valid_rectangle_bounds points bounds =
   let first_point = Option.value_exn (List.hd points) in
   let filter_bounds (x_1, y_1) (x_2, y_2) bounds' =
