@@ -84,11 +84,9 @@ let filter_valid_rectangle_bounds points bounds =
 let read_lines = In_channel.read_lines;;
 
 let filename = "input.txt" in
-points_of_lines (read_lines filename)
-|> biggest_rectange
-|> string_of_int
-|> print_endline;
 let points = points_of_lines (read_lines filename) in
+biggest_rectange points |> string_of_int |> print_endline;
+(* part 2 *)
 all_rectangle_bounds points
 |> filter_valid_rectangle_bounds points
 |> List.fold_left ~init:0 ~f:(fun curr_max ((x_1, x_2), (y_1, y_2)) ->
