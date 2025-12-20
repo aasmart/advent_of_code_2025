@@ -1,5 +1,5 @@
 (executable
  (public_name day10)
  (name main)
- (libraries day10 core bitv re2))
+ (libraries day10 core bitv re2 lp lp-glpk))
 
