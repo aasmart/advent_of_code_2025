@@ -94,7 +94,7 @@ let part_2 filename =
     in
     (* create the problem we want to optimize *)
     let problem =
-      let button_var =
+      let button_vars =
         List.init (List.length buttons) ~f:(fun i ->
           Lp.var
             ~integer:true
@@ -104,14 +104,14 @@ let part_2 filename =
       (* we want to minimize the sum of the number of times we press each button*)
       let objective =
         Lp.minimize
-          (List.reduce_exn button_var ~f:(fun curr_poly next ->
+          (List.reduce_exn button_vars ~f:(fun curr_poly next ->
              Lp.( ++ ) curr_poly next))
       in
       (* build the polynomial portion of the constraints *)
       let constraint_polys =
         Array.create ~len:(List.length joltage_requirements) (Lp.c 0.)
       in
-      List.iter2_exn buttons button_var ~f:(fun set var ->
+      List.iter2_exn buttons button_vars ~f:(fun set var ->
         List.iter set ~f:(fun counter ->
           constraint_polys.(counter) <- Lp.( ++ ) constraint_polys.(counter) var));
       (* add the joltage equivalence to each constraint *)
