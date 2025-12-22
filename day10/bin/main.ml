@@ -6,6 +6,28 @@ let toggle_regex = Re2.create_exn "(\\([0-9,]*\\))"
 let joltage_regex = Re2.create_exn "({[0-9,]*})"
 let num_regex = Re2.create_exn "(\\d*)"
 
+let gen_all_button_combinations target toggles =
+  (* since pressing multiple buttons twice does nothing, our only option at each point is to press it once, or not at all*)
+  (* so to generate all the combinations, we use the button, or we dont*)
+  let rec all_combinations toggles current_state current_used_toggles =
+    if Bitv.equal current_state target
+    then [ current_used_toggles ]
+    else (
+      match toggles with
+      | hd :: tl ->
+        let use =
+          all_combinations
+            tl
+            (Bitv.bw_xor current_state hd)
+            (hd :: current_used_toggles)
+        in
+        let dont_use = all_combinations tl current_state current_used_toggles in
+        List.append dont_use use
+      | [] -> [])
+  in
+  all_combinations toggles (Bitv.create (Bitv.length target) false) []
+;;
+
 let part_1 filename =
   List.fold (read_lines filename) ~init:0 ~f:(fun total line ->
     let target =
@@ -33,39 +55,16 @@ let part_1 filename =
           toggle_set)
       | Error _ -> failwith "no toggles"
     in
-    (* perform a level-order search to reach the end state *)
-    let rec find_min_toggles current_states move_count =
-      let next_states, found_target =
-        List.fold
-          current_states
-          ~init:([], false)
-          ~f:(fun (next_states, found_target) current_state ->
-            let next_states', found_target' =
-              List.fold
-                toggle_sets
-                ~init:(next_states, found_target)
-                ~f:(fun (next_states, found_target) toggle_set ->
-                  let next_state = Bitv.bw_xor current_state toggle_set in
-                  let found_target' =
-                    Bitv.equal target next_state || found_target
-                  in
-                  next_state :: next_states, found_target')
-            in
-            ( List.dedup_and_sort next_states' ~compare:(fun a b ->
-                Int.compare (Bitv.to_int_us a) (Bitv.to_int_us b))
-            , found_target' ))
-      in
-      if found_target
-      then move_count
-      else find_min_toggles next_states move_count + 1
-    in
-    total + find_min_toggles [ Bitv.create (Bitv.length target) false ] 1)
+    total
+    + List.fold_left
+        (gen_all_button_combinations target toggle_sets)
+        ~init:Int.max_value
+        ~f:(fun m l -> min m (List.length l)))
   |> string_of_int
   |> print_endline
 ;;
 
 let solve problem =
-  (* For other interfaces, use Lp_glpk_js or Lp_gurobi instead *)
   match Lp_glpk.solve ~term_output:false problem with
   | Ok (_, xs) ->
     Lp.PMap.bindings xs
@@ -126,8 +125,6 @@ let part_2 filename =
       Lp.make objective constraints
     in
     total + solve problem)
-(* in *)
-(*     ; *)
 ;;
 
 let filename = "input.txt" in
