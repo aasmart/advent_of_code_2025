@@ -102,6 +102,35 @@ let count_dac_fft_paths adj_list ~from_node ~to_node =
     (Hashtbl.filter incoming_edges ~f:(fun count -> count = 0) |> Hashtbl.keys)
 ;;
 
+(* pt2 alternative solution *)
+module PathCacheEntry = struct
+  type t = string * bool * bool [@@deriving sexp, hash, compare]
+end
+
+module PathCache = Hashtbl.Make (PathCacheEntry)
+
+let count_unique_paths_pt2 adj_list ~from_node ~to_node =
+  let cache = PathCache.create ~growth_allowed:true () in
+  let rec count_unique_paths_pt2 from_node saw_dac saw_fft =
+    match Hashtbl.find cache (from_node, saw_dac, saw_fft) with
+    | Some v -> v
+    | None ->
+      if String.equal from_node to_node
+      then if saw_dac && saw_fft then 1 else 0
+      else (
+        let edges = Hashtbl.find_exn adj_list from_node in
+        List.fold_left edges ~init:0 ~f:(fun num_paths to_vertex ->
+          let saw_dac' = saw_dac || String.equal from_node "dac" in
+          let saw_fft' = saw_fft || String.equal from_node "fft" in
+          let count =
+            num_paths + count_unique_paths_pt2 to_vertex saw_dac' saw_fft'
+          in
+          Hashtbl.set cache ~key:(from_node, saw_dac, saw_fft) ~data:count;
+          count))
+  in
+  count_unique_paths_pt2 from_node false false
+;;
+
 let filename = "sample.txt" in
 read_lines filename
 |> make_adjlist
@@ -112,5 +141,11 @@ let filename = "input.txt" in
 read_lines filename
 |> make_adjlist
 |> count_dac_fft_paths ~from_node:"svr" ~to_node:"out"
+|> string_of_int
+|> print_endline;
+(* pt2 alternative solution *)
+read_lines filename
+|> make_adjlist
+|> count_unique_paths_pt2 ~from_node:"svr" ~to_node:"out"
 |> string_of_int
 |> print_endline
